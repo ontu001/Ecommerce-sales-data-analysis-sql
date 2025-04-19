@@ -152,3 +152,57 @@ select
 	round(avg(discount),2) as avg_discount
 from sales
 group by 1;
+
+
+
+
+-- Find all  the recently added product
+Select
+	productname,
+	dateadded
+from sales
+order by dateadded desc;
+
+
+
+
+
+-- Find the products where the product rating is higher than the avg rating. 
+select
+	category,
+	productname,
+	rating
+from sales
+where rating > (select avg(rating) from sales)
+order by rating desc;
+
+
+
+
+
+
+
+create or replace view vw_product_overview as
+select
+	productid,
+	productname,
+	category,
+	price,
+	discount,
+	price *(1-discount) as discounted_price,
+	rating,
+	sales,
+	case
+		when stockquantity > 0 then 'In Stock'
+		else 'Out Of Stock'
+	end as stock_status,
+	dateadded,
+	city,
+	sales * (price * (1-discount)) as revenue
+	from sales;
+
+
+
+
+
+select * from vw_product_overview;
