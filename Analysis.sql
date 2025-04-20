@@ -206,3 +206,52 @@ select
 
 
 select * from vw_product_overview;
+
+
+
+
+
+
+-- Create a summary table
+create table DailyProductSummary(
+	SummaryDate date,
+	Category text,
+	TotalSales int,
+	AvgPrice numeric(10,2),
+	AvgRating numeric(10,2),
+	TopProduct text
+
+);
+
+
+
+-- Create a procedure to automate the process for creating Daily Product Summary Table.
+create or replace procedure run_daily_product_summary()
+language plpgsql
+as $$
+begin
+delete from DailyProductSummary where SummaryDate = current_date;
+
+insert into DailyProductSummary
+select
+	current_date as SummaryDate,
+	Category,
+	sum(sales) as TotalSales,
+	avg(price) as AvgPrice,
+	avg(rating) as AvgRating,
+	(
+		select productname
+		from sales p2
+		where p1.category = p2.category
+		order by sales desc
+		limit 1
+	) as TotalProduct
+from sales p1
+group by category;
+end;
+$$;
+
+
+-- call the function
+call run_daily_product_summary();
+Select * from DailyProductSummary;
